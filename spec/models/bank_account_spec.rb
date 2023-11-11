@@ -108,4 +108,26 @@ RSpec.describe BankAccount do
       expect(response).to be_falsey
     end
   end
+
+  context "when withdraw money from account" do
+    context "when there is enough money in the account" do
+      it "updates the account balance" do
+        bank_account = described_class.new(balance_cents: 1000)
+
+        response = bank_account.withdraw_money_from_account!(200)
+
+        expect(bank_account.reload.balance_cents).to eq(800)
+      end
+    end
+
+    context "when there isn't enough money in the account" do
+      it "raises an InsufficientBalanceError" do
+        bank_account = described_class.new(balance_cents: 1000)
+
+        expect {
+          bank_account.withdraw_money_from_account!(2000)
+        }.to raise_error(InsufficientBalanceError)
+      end
+    end
+  end
 end
