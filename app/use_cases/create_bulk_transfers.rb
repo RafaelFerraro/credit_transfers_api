@@ -4,10 +4,19 @@ class CreateBulkTransfers
     @bank_account_repository = overrides.fetch(:bank_account_repository) do
       BankAccount
     end
+    @create_transfer_use_case = overrides.fetch(:create_transfer_use_case) do
+      CreateTransfer.new
+    end
   end
 
   def create
-    raise InsufficientBalanceError unless bank_account.sufficient_balance_for_transaction?(transaction_total_amount_cents)
+    @bank_account_repository.transaction do
+      raise InsufficientBalanceError unless bank_account.sufficient_balance_for_transaction?(transaction_total_amount_cents)
+
+      @create_transfer_command.credit_transfers.each do |credit_transfer|
+        @create_transfer_use_case.create(credit_transfer)
+      end
+    end
   end
 
   private
