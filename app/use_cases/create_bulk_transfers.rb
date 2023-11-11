@@ -11,7 +11,7 @@ class CreateBulkTransfers
 
   def create
     @bank_account_repository.transaction do
-      raise InsufficientBalanceError unless bank_account.sufficient_balance_for_transaction?(
+      bank_account.withdraw_money_from_account!(
         @create_transfer_command.transaction_total_amount_cents
       )
 

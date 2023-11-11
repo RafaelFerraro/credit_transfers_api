@@ -86,8 +86,8 @@ RSpec.describe CreateBulkTransfers do
             bic: create_transfer_command.bic,
             iban: create_transfer_command.iban,
           ).and_return(bank_account)
-        allow(bank_account).to receive(:sufficient_balance_for_transaction?)
-          .with(6125250).and_return(false)
+        allow(bank_account).to receive(:withdraw_money_from_account!)
+          .with(6125250).and_raise(InsufficientBalanceError)
 
         expect {
           described_class.new(
@@ -137,8 +137,7 @@ RSpec.describe CreateBulkTransfers do
             bic: create_transfer_command.bic,
             iban: create_transfer_command.iban,
           ).and_return(bank_account)
-        allow(bank_account).to receive(:sufficient_balance_for_transaction?)
-          .with(6125250).and_return(true)
+        allow(bank_account).to receive(:withdraw_money_from_account!)
 
         described_class.new(
           create_transfer_command,

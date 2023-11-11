@@ -5,13 +5,15 @@ class BankAccount < ApplicationRecord
     ).first
   end
 
-  def sufficient_balance_for_transaction?(amount_cents)
-    balance_cents >= amount_cents
-  end
-
   def withdraw_money_from_account!(amount_cents)
     raise InsufficientBalanceError unless sufficient_balance_for_transaction?(amount_cents)
 
     update(balance_cents: balance_cents - amount_cents)
+  end
+
+  private
+
+  def sufficient_balance_for_transaction?(amount_cents)
+    balance_cents >= amount_cents
   end
 end

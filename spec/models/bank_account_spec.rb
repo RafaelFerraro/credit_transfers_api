@@ -91,25 +91,7 @@ RSpec.describe BankAccount do
     end
   end
 
-  context "when asking for sufficient balance for a transaction" do
-    it "returns true if there is sufficient balance" do
-      bank_account = described_class.new(balance_cents: 2000)
-
-      response = bank_account.sufficient_balance_for_transaction?(1000)
-
-      expect(response).to be_truthy
-    end
-
-    it "returns false if there isn't sufficient balance" do
-      bank_account = described_class.new(balance_cents: 1000)
-
-      response = bank_account.sufficient_balance_for_transaction?(2000)
-
-      expect(response).to be_falsey
-    end
-  end
-
-  context "when withdraw money from account" do
+  context "when withdrawing money from account" do
     context "when there is enough money in the account" do
       it "updates the account balance" do
         bank_account = described_class.new(balance_cents: 1000)
