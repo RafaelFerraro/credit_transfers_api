@@ -4,17 +4,26 @@ class CreateBulkTransfers
     @bank_account_repository = overrides.fetch(:bank_account_repository) do
       BankAccount
     end
-    @create_transfer_use_case = overrides.fetch(:create_transfer_use_case) do
-      CreateTransfer.new
+    @transfer_repository = overrides.fetch(:transfer_repository) do
+      Transfer
     end
   end
 
   def create
     @bank_account_repository.transaction do
-      raise InsufficientBalanceError unless bank_account.sufficient_balance_for_transaction?(transaction_total_amount_cents)
+      raise InsufficientBalanceError unless bank_account.sufficient_balance_for_transaction?(
+        @create_transfer_command.transaction_total_amount_cents
+      )
 
       @create_transfer_command.credit_transfers.each do |credit_transfer|
-        @create_transfer_use_case.create(credit_transfer)
+        @transfer_repository.create(
+          counterparty_name: credit_transfer.counterparty_name,
+          counterparty_iban: credit_transfer.counterparty_iban,
+          counterparty_bic: credit_transfer.counterparty_bic,
+          amount_cents: credit_transfer.amount_cents,
+          bank_account_id: bank_account.id,
+          description: credit_transfer.description
+        )
       end
     end
   end
@@ -29,11 +38,5 @@ class CreateBulkTransfers
     ).tap do |account|
       raise BankAccountNotFoundError unless account
     end
-  end
-
-  def transaction_total_amount_cents
-    @create_transfer_command.credit_transfers.map do |credit_transfer|
-      (BigDecimal(credit_transfer.amount.to_s) * 100).to_i
-    end.sum
   end
 end

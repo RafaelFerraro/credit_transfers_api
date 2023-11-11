@@ -5,15 +5,17 @@ RSpec.describe CreateBulkTransfers do
     context "when the bank account is not found" do
       it "raises BankAccountNotFoundError" do
         bank_account_repository = class_double(BankAccount)
-        first_credit_transfer_command = OpenStruct.new(
-          amount: "14.5",
+        first_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 1450,
           counterparty_name: "Bip Bip",
           counterparty_bic: "CRLYFRPPTOU",
           counterparty_iban: "EE383680981021245685",
           description: "Wonderland/4410"
         )
-        second_credit_transfer_command = OpenStruct.new(
-          amount: "61238",
+        second_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 6123800,
           counterparty_name: "Wile E Coyote",
           counterparty_bic: "ZDRPLBQI",
           counterparty_iban: "DE9935420810036209081725212",
@@ -50,15 +52,17 @@ RSpec.describe CreateBulkTransfers do
       it "raises InsufficientBalanceError" do
         bank_account_repository = class_double(BankAccount)
         bank_account = instance_double(BankAccount)
-        first_credit_transfer_command = OpenStruct.new(
-          amount: "14.5",
+        first_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 1450,
           counterparty_name: "Bip Bip",
           counterparty_bic: "CRLYFRPPTOU",
           counterparty_iban: "EE383680981021245685",
           description: "Wonderland/4410"
         )
-        second_credit_transfer_command = OpenStruct.new(
-          amount: "61238",
+        second_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 6123800,
           counterparty_name: "Wile E Coyote",
           counterparty_bic: "ZDRPLBQI",
           counterparty_iban: "DE9935420810036209081725212",
@@ -69,6 +73,7 @@ RSpec.describe CreateBulkTransfers do
           organization_name: "ACME Corp",
           bic: "OIVUSCLQXXX",
           iban: "FR10474608000002006107XXXXX",
+          transaction_total_amount_cents: 6125250,
           credit_transfers: [
             first_credit_transfer_command,
             second_credit_transfer_command
@@ -96,17 +101,19 @@ RSpec.describe CreateBulkTransfers do
     context "when everything is correct" do
       it "creates transfers" do
         bank_account_repository = class_double(BankAccount)
-        bank_account = instance_double(BankAccount)
-        create_transfer_use_case = instance_spy(CreateTransfer)
-        first_credit_transfer_command = OpenStruct.new(
-          amount: "14.5",
+        bank_account = instance_double(BankAccount, id: 1)
+        transfer_repository = class_spy(Transfer)
+        first_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 1450,
           counterparty_name: "Bip Bip",
           counterparty_bic: "CRLYFRPPTOU",
           counterparty_iban: "EE383680981021245685",
           description: "Wonderland/4410"
         )
-        second_credit_transfer_command = OpenStruct.new(
-          amount: "61238",
+        second_credit_transfer_command = instance_double(
+          CreditTransferCommand,
+          amount_cents: 6123800,
           counterparty_name: "Wile E Coyote",
           counterparty_bic: "ZDRPLBQI",
           counterparty_iban: "DE9935420810036209081725212",
@@ -117,6 +124,7 @@ RSpec.describe CreateBulkTransfers do
           organization_name: "ACME Corp",
           bic: "OIVUSCLQXXX",
           iban: "FR10474608000002006107XXXXX",
+          transaction_total_amount_cents: 6125250,
           credit_transfers: [
             first_credit_transfer_command,
             second_credit_transfer_command
@@ -135,13 +143,27 @@ RSpec.describe CreateBulkTransfers do
         described_class.new(
           create_transfer_command,
           bank_account_repository:,
-          create_transfer_use_case:
+          transfer_repository:
         ).create
 
-        expect(create_transfer_use_case).to have_received(:create)
-          .with(first_credit_transfer_command)
-        expect(create_transfer_use_case).to have_received(:create)
-          .with(second_credit_transfer_command)
+        expect(transfer_repository).to have_received(:create)
+          .with(
+            counterparty_name: first_credit_transfer_command.counterparty_name,
+            counterparty_iban: first_credit_transfer_command.counterparty_iban,
+            counterparty_bic: first_credit_transfer_command.counterparty_bic,
+            amount_cents: first_credit_transfer_command.amount_cents,
+            bank_account_id: bank_account.id,
+            description: first_credit_transfer_command.description
+          )
+        expect(transfer_repository).to have_received(:create)
+          .with(
+            counterparty_name: second_credit_transfer_command.counterparty_name,
+            counterparty_iban: second_credit_transfer_command.counterparty_iban,
+            counterparty_bic: second_credit_transfer_command.counterparty_bic,
+            amount_cents: second_credit_transfer_command.amount_cents,
+            bank_account_id: bank_account.id,
+            description: second_credit_transfer_command.description
+          )
       end
     end
   end
