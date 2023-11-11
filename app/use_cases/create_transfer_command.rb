@@ -4,8 +4,8 @@ class CreateTransferCommand
   def initialize(raw_params)
     @raw_params = raw_params
     @organization_name = raw_params["organization_name"]
-    @bic = raw_params["bic"]
-    @iban = raw_params["iban"]
+    @bic = raw_params["organization_bic"]
+    @iban = raw_params["organization_iban"]
     @transfers = raw_params["credit_transfers"]
   end
 
