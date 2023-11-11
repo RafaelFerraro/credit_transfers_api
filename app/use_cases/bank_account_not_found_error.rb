@@ -1,0 +1,1 @@
+class BankAccountNotFoundError < StandardError; end
