@@ -2,6 +2,39 @@ require 'rails_helper'
 
 RSpec.describe "Transfers", type: :request do
   describe "POST /transfers" do
+    context "when bank account is not found" do
+      let(:bank_account) do
+        BankAccount.create(
+          organization_name: "Org Name",
+          iban: "Iban",
+          bic: "Bic",
+          balance_cents: 10000,
+        )
+      end
+      let(:request_body) {
+        {
+          "organization_name" => "Whatever",
+          "organization_bic" => bank_account.bic,
+          "organization_iban" => bank_account.iban,
+          "credit_transfers" => [
+            {
+              "amount" => "14.5",
+              "counterparty_name" => "Bip Bip",
+              "counterparty_bic" => "CRLYFRPPTOU",
+              "counterparty_iban" => "EE383680981021245685",
+              "description" => "Wonderland/4410"
+            }
+          ]
+        }
+      }
+
+      it "returns a 404 http status code" do
+        post "/transfers", :params => request_body
+
+        expect(response.status).to eq(404)
+      end
+    end
+
     context "when there isn't enough balance in the customer's account" do
       let(:bank_account) do
         BankAccount.create(
@@ -41,6 +74,7 @@ RSpec.describe "Transfers", type: :request do
           ]
         }
       }
+
       it "returns a 422 http status code" do
         post "/transfers", :params => request_body
 
@@ -102,7 +136,7 @@ RSpec.describe "Transfers", type: :request do
         }
       }
 
-      it "returns a 200 http status code" do
+      it "returns a 201 http status code" do
         post "/transfers", :params => request_body
 
         expect(response.status).to eq(201)

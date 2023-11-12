@@ -6,6 +6,8 @@ class TransfersController < ApplicationController
 
     render json: {status: "ok"}, status: :created
   rescue StandardError => error
-    render status: :unprocessable_entity if error.is_a?(InsufficientBalanceError)
+    return render status: :not_found if error.is_a?(BankAccountNotFoundError)
+
+    render status: :unprocessable_entity , json: { error: error.message }
   end
 end
