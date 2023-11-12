@@ -11,8 +11,10 @@ class CreateBulkTransfers
 
   def create
     @bank_account_repository.transaction do
-      bank_account.withdraw_money_from_account!(
-        @create_transfer_command.transaction_total_amount_cents
+      bank_account.withdraw_money_from_account!(transaction_total_amount_cents)
+
+      Rails.logger.info(
+        "#{transaction_total_amount_cents} was subtracted from customer (#{bank_account.id})"
       )
 
       @create_transfer_command.credit_transfers.each do |credit_transfer|
@@ -29,6 +31,10 @@ class CreateBulkTransfers
   end
 
   private
+
+  def transaction_total_amount_cents
+    @create_transfer_command.transaction_total_amount_cents
+  end
 
   def bank_account
     @bank_account ||= @bank_account_repository.find_bank_account_by(
