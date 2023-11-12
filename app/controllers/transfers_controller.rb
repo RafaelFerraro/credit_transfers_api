@@ -1,9 +1,8 @@
 class TransfersController < ApplicationController
   def create
     Rails.logger.info("Bulk transfer has started! Account: #{params[:organization_name]}")
-    create_transfer_command = CreateTransferCommand.new(params)
 
-    CreateBulkTransfers.new(create_transfer_command).create
+    CreateBulkTransfers.new(CreateTransferCommand.new(params)).create
 
     render json: {status: "ok"}, status: :created
   rescue StandardError => error
