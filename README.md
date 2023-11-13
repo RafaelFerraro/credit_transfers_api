@@ -6,14 +6,17 @@ The Credit Transfers API application aims to perform transactions between bank a
 
 ## Implementation
 
-Given the time constraints for the challenge, I decided to use Rails as a web framework and SQLite3 as the proposed database to save time in the initial project setup and focus on developing the functionality and organization of the application.
+Given the time constraints for the challenge, it was decided to use Rails as a web framework and SQLite3 as the proposed database to save time in the initial project setup and focus on developing the functionality and organization of the application.
 
 The project is essentially organized into three layers:
 
-- API layer - where controllers as adapters for HTTP requests are located
+- API layer - where controllers as adapters for HTTP requests are located.
 - Application layer - where application use cases and some objects encapsulating input data are located
 - Domain and database layer - where entities like `BankAccount` and `Transfer` are located. I would like to separate these two responsibilities and have a business layer separate from the database adaptation layer, for instance. However, given the time limit for the challenge, I decided to follow a simpler approach already proposed by the framework.
 Thus, the application flow will always be `Controllers -> UseCases -> Models`. Models do not depend on UseCases, and UseCases do not depend on Controllers. All dependencies are managed through dependency injection, facilitating unit tests.
+
+### /transfers API
+Given that the JSON files used as samples provide bank account data in the request body, it was decided to create the `/transfers` resource instead of the `/bank_account/:id/transfers` resource.
 
 ### Commands
 
@@ -46,8 +49,9 @@ Good improvements could be applied to the application if there were more time or
 - Use of a relational database such as PostgreSQL, for example, mainly for using transactions with other isolation levels.
 - Addition of constraints on database tables, such as avoiding the entry of null values.
 - Validation of input data, such as checking if the amount field value is positive, and preventing SQL injection for security reasons.
-- Improvements and addition of more logs throughout the application.
-- Improvement in API /transfers responses.
+- Addition of more logs throughout the application.
+- Change the resource `/transfers` in the API to a nested resource `/bank_account/:id/transfers` and avoid receiving the raw bank account data in the request body.
+- Better API responses for `/transfers` endpoint.
 - Migration to a Hexagonal architecture (domains/repositories).
 - Docker and docker-compose for easier local execution.
 
